@@ -61,7 +61,7 @@ app.post("/generateToken", async (req, res) => {
 
 // Check the validity of a token
 app.post("/checkToken", async (req, res) => {
-  const receivedToken = req.body.token;
+  const receivedToken = req.body;
   console.log(receivedToken)
   if (!receivedToken) {
     res.status(400).json({ error: "Token not provided" });
