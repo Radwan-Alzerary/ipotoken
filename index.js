@@ -2,9 +2,17 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const { v4: uuidv4 } = require("uuid");
 const mongoose = require("mongoose");
+const cors = require("cors");
+
+const corsOptions = {
+  origin: ["http://localhost:8080", "http://localhost:3000"],
+  credentials: true,
+  "Access-Control-Allow-Credentials": true,
+};
 
 const app = express();
 const PORT = 4000;
+app.use(cors(corsOptions));
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static("public"));
