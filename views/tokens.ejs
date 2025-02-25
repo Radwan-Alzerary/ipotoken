@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة إدارة الرموز</title>
+  <!-- Include Tailwind CSS from CDN (optional, for styling) -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100">
+  <div class="container mx-auto px-4 py-6">
+    <h1 class="text-3xl font-bold mb-4">لوحة إدارة الرموز</h1>
+
+    <!-- زر لإظهار/إخفاء نموذج إنشاء رمز جديد -->
+    <div class="mb-4">
+      <button id="toggleAddForm" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        إضافة رمز جديد
+      </button>
+    </div>
+
+    <!-- نموذج إنشاء رمز جديد - مخفي افتراضيًا -->
+    <div id="addTokenForm" class="bg-white p-6 rounded shadow mb-8 hidden">
+      <h2 class="text-2xl font-semibold mb-4">إنشاء رمز جديد</h2>
+      <form action="/tokens/generate" method="POST" class="space-y-4">
+        <div>
+          <label class="block text-gray-700">عدد الأيام</label>
+          <input type="number" name="daysToWork" required class="w-full px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="block text-gray-700">السعر</label>
+          <input type="number" name="price" step="0.01" class="w-full px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="block text-gray-700">اسم العميل</label>
+          <input type="text" name="customerName" class="w-full px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="block text-gray-700">الوصف</label>
+          <textarea name="description" class="w-full px-3 py-2 border rounded"></textarea>
+        </div>
+        <!-- حقول الموقع -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-700">خط العرض (Latitude)</label>
+            <input type="number" step="0.000001" name="latitude" class="w-full px-3 py-2 border rounded"
+              placeholder="مثلاً: 24.7136" />
+          </div>
+          <div>
+            <label class="block text-gray-700">خط الطول (Longitude)</label>
+            <input type="number" step="0.000001" name="longitude" class="w-full px-3 py-2 border rounded"
+              placeholder="مثلاً: 46.6753" />
+          </div>
+        </div>
+        <!-- تفاصيل إضافية -->
+        <div>
+          <label class="block text-gray-700">نوع الدفع</label>
+          <input type="text" name="paymentType" class="w-full px-3 py-2 border rounded"
+            placeholder="مثلاً: نقداً، بطاقة ائتمان" />
+        </div>
+        <div>
+          <label class="block text-gray-700">من أين عرف عن النظام</label>
+          <input type="text" name="referral" class="w-full px-3 py-2 border rounded"
+            placeholder="مثلاً: إعلان، توصية" />
+        </div>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">إنشاء الرمز</button>
+      </form>
+    </div>
+
+    <!-- بطاقات الإحصائيات -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-blue-500 text-white p-4 rounded shadow">
+        <h2 class="text-xl font-semibold">إجمالي الرموز</h2>
+        <p class="text-3xl">
+          <%= totalTokens %>
+        </p>
+      </div>
+      <div class="bg-green-500 text-white p-4 rounded shadow">
+        <h2 class="text-xl font-semibold">الرموز النشطة</h2>
+        <p class="text-3xl">
+          <%= activeTokens %>
+        </p>
+      </div>
+      <div class="bg-red-500 text-white p-4 rounded shadow">
+        <h2 class="text-xl font-semibold">الرموز المستخدمة/المنتهية</h2>
+        <p class="text-3xl">
+          <%= usedOrExpiredTokens %>
+        </p>
+      </div>
+    </div>
+
+    <!-- قسم الفلاتر والبحث -->
+    <div class="flex flex-col md:flex-row items-center justify-between mb-4">
+      <div class="flex space-x-4 mb-2 md:mb-0">
+        <select id="filterStatus" class="border rounded px-3 py-2">
+          <option value="">جميع الحالات</option>
+          <option value="active">نشطة</option>
+          <option value="used">مستخدمة</option>
+          <option value="expired">منتهية</option>
+        </select>
+        <input type="date" id="filterDate" class="border rounded px-3 py-2" placeholder="تاريخ الانتهاء" />
+      </div>
+      <div class="relative">
+        <input type="text" id="searchToken" class="border rounded px-3 py-2"
+          placeholder="ابحث برمز الأمان أو اسم العميل..." />
+        <button id="searchBtn"
+          class="absolute right-0 top-0 mt-2 mr-2 bg-blue-500 text-white px-3 py-1 rounded">بحث</button>
+      </div>
+    </div>
+
+    <!-- جدول الرموز -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white divide-y divide-gray-200">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="px-4 py-2 text-right">رمز الأمان</th>
+            <th class="px-4 py-2 text-right">عدد الأيام</th>
+            <th class="px-4 py-2 text-right">السعر</th>
+            <th class="px-4 py-2 text-right">اسم العميل</th>
+            <th class="px-4 py-2 text-right">الموقع</th>
+            <th class="px-4 py-2 text-right">الوصف</th>
+            <th class="px-4 py-2 text-right">الحالة</th>
+            <th class="px-4 py-2 text-right">تاريخ الانتهاء</th>
+            <th class="px-4 py-2 text-right">أنشئ بواسطة</th>
+            <th class="px-4 py-2 text-center">حالة الجهاز</th>
+            <th class="px-4 py-2 text-center">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <% tokens.forEach(token=> { %>
+            <tr>
+              <td class="px-4 py-2">
+                <%= token.securityCode %>
+              </td>
+              <td class="px-4 py-2">
+                <%= token.dayNum %>
+              </td>
+              <td class="px-4 py-2">
+                <%= token.price ? token.price.toFixed(2) : '---' %>
+              </td>
+              <td class="px-4 py-2">
+                <%= token.customerName || '---' %>
+              </td>
+              <td class="px-4 py-2">
+                <%= token.location || '---' %>
+              </td>
+              <td class="px-4 py-2">
+                <%= token.description || '---' %>
+              </td>
+              <td class="px-4 py-2">
+                <% if(token.state==='active' ) { %>
+                  <span class="text-green-600 font-bold">نشطة</span>
+                  <% } else if(token.state==='used' ) { %>
+                    <span class="text-yellow-600 font-bold">مستخدمة</span>
+                    <% } else { %>
+                      <span class="text-red-600 font-bold">منتهية</span>
+                      <% } %>
+              </td>
+              <td class="px-4 py-2">
+                <%= new Date(token.expires).toLocaleString() %>
+              </td>
+              <td class="px-4 py-2">
+                <%= token.createdBy %>
+              </td>
+              <!-- New Device Status Cell -->
+              <td class="px-4 py-2 text-center" data-device-key="<%= token.securityCode ? token.securityCode : '' %>">
+                <% if(token.securityCode) { %>
+                  <span class="device-status">غير متصل</span>
+                  <% } else { %>
+                    ---
+                    <% } %>
+              </td>
+              <td class="px-4 py-2 text-center space-x-2">
+                <button onclick="copyToken('<%= token.securityCode %>/<%= token.dayNum %>')"
+                  class="bg-indigo-500 text-white px-2 py-1 rounded hover:bg-indigo-600">نسخ</button>
+                <button onclick="editToken('<%= token._id %>')"
+                  class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">تعديل</button>
+                <button onclick="deleteToken('<%= token._id %>')"
+                  class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">حذف</button>
+                <a href="/tokens/profile/<%= token._id %>"
+                  class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">ملف الرمز</a>
+              </td>
+            </tr>
+            <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-4 flex justify-center">
+      <% if (currentPage> 1) { %>
+        <button onclick="changePage(<%= currentPage - 1 %>)" class="mx-1 px-3 py-1 bg-gray-300 rounded">السابق</button>
+        <% } %>
+          <span class="mx-2 font-bold">صفحة <%= currentPage %> من <%= totalPages %></span>
+          <% if (currentPage < totalPages) { %>
+            <button onclick="changePage(<%= currentPage + 1 %>)"
+              class="mx-1 px-3 py-1 bg-gray-300 rounded">التالي</button>
+            <% } %>
+    </div>
+  </div>
+
+  <!-- Edit Token Modal (hidden by default) -->
+  <div id="editModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white p-6 rounded w-full max-w-md">
+      <h2 class="text-2xl font-bold mb-4">تعديل الرمز</h2>
+      <form id="editTokenForm" class="space-y-4">
+        <input type="hidden" name="tokenId" id="editTokenId" />
+        <div>
+          <label class="block text-gray-700">عدد الأيام</label>
+          <input type="number" name="dayNum" id="editDayNum" class="w-full px-3 py-2 border rounded" required />
+        </div>
+        <div>
+          <label class="block text-gray-700">السعر</label>
+          <input type="number" name="price" id="editPrice" step="0.01" class="w-full px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="block text-gray-700">اسم العميل</label>
+          <input type="text" name="customerName" id="editCustomerName" class="w-full px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="block text-gray-700">الموقع</label>
+          <input type="text" name="location" id="editLocation" class="w-full px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="block text-gray-700">الوصف</label>
+          <textarea name="description" id="editDescription" class="w-full px-3 py-2 border rounded"></textarea>
+        </div>
+        <div class="flex justify-end space-x-2">
+          <button type="button" onclick="closeEditModal()"
+            class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">إلغاء</button>
+          <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">حفظ
+            التغييرات</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Load Socket.io client library from jsDelivr BEFORE your inline script -->
+  <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.6.0/dist/socket.io.min.js"></script>
+  <!-- Inline script that uses Socket.io -->
+  <script>
+    const socket = io();
+    socket.emit('pingDevices');
+    // Listen for device status updates from the server
+    socket.on('deviceStatus', (data) => {
+      console.log("حالة الجهاز:", data);
+      document.querySelectorAll(`[data-device-key="${data.deviceKey}"]`).forEach(cell => {
+        const statusSpan = cell.querySelector('.device-status');
+        if (statusSpan) {
+          statusSpan.textContent = data.active ? "متصل" : "غير متصل";
+        }
+      });
+    });
+    socket.on('pingDevicesResponse', (devices) => {
+      console.log("الأجهزة المتصلة:", devices);
+      // Optionally, reset all devices to "غير متصل" before updating
+      document.querySelectorAll('[data-device-key]').forEach(cell => {
+        const statusSpan = cell.querySelector('.device-status');
+        if (statusSpan) {
+          statusSpan.textContent = "غير متصل";
+        }
+      });
+
+      // Update the status for each active device from the array
+      devices.forEach(device => {
+        document.querySelectorAll(`[data-device-key="${device}"]`).forEach(cell => {
+          console.log(device)
+          const statusSpan = cell.querySelector('.device-status');
+          if (statusSpan) {
+            statusSpan.textContent = "متصل";
+          }
+        });
+      });
+    });
+
+    // Emit a ping event every 10 seconds (ensure your server handles this event)
+    // setInterval(() => {
+    //   socket.emit('pingDevices');
+    // }, 10000);
+
+    // Toggle add token form visibility
+    document.getElementById('toggleAddForm').addEventListener('click', function () {
+      const formDiv = document.getElementById('addTokenForm');
+      formDiv.classList.toggle('hidden');
+    });
+
+    function copyToken(tokenString) {
+      navigator.clipboard.writeText(tokenString)
+        .then(() => alert("تم نسخ الرمز: " + tokenString))
+        .catch(err => alert("فشل النسخ: " + err));
+    }
+
+    function changePage(page) {
+      window.location.href = `/tokens?page=${page}`;
+    }
+
+    function editToken(tokenId) {
+      fetch(`/tokens/${tokenId}`)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('editTokenId').value = data._id;
+          document.getElementById('editDayNum').value = data.dayNum;
+          document.getElementById('editPrice').value = data.price || '';
+          document.getElementById('editCustomerName').value = data.customerName || '';
+          document.getElementById('editLocation').value = data.location || '';
+          document.getElementById('editDescription').value = data.description || '';
+          document.getElementById('editModal').classList.remove('hidden');
+        })
+        .catch(err => alert("فشل جلب بيانات الرمز: " + err));
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    document.getElementById('editTokenForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const tokenId = document.getElementById('editTokenId').value;
+      const dayNum = document.getElementById('editDayNum').value;
+      const price = document.getElementById('editPrice').value;
+      const customerName = document.getElementById('editCustomerName').value;
+      const location = document.getElementById('editLocation').value;
+      const description = document.getElementById('editDescription').value;
+
+      fetch(`/tokens/${tokenId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dayNum, price, customerName, location, description })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert("تم تحديث الرمز بنجاح");
+            window.location.reload();
+          } else {
+            alert("فشل التحديث: " + data.msg);
+          }
+        })
+        .catch(err => alert("فشل التحديث: " + err));
+    });
+
+    function deleteToken(tokenId) {
+      if (confirm("هل أنت متأكد من حذف هذا الرمز؟")) {
+        fetch(`/tokens/${tokenId}`, {
+          method: 'DELETE'
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert("تم حذف الرمز بنجاح");
+              window.location.reload();
+            } else {
+              alert("فشل الحذف: " + data.msg);
+            }
+          })
+          .catch(err => alert("فشل الحذف: " + err));
+      }
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,18 @@
+<div class="text-center">
+  <h1 class="text-4xl font-bold mb-4">مرحباً بكم في نظام إدارة الرموز</h1>
+  <% if(user) { %>
+    <p class="text-lg mb-6">مرحباً، <span class="font-semibold"><%= user.username %></span> (<%= user.role %>)</p>
+    <div class="space-x-4">
+      <a href="/tokens" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">إدارة الرموز</a>
+      <a href="/devices" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">إدارة الأجهزة</a>
+      <% if(user.role === 'superadmin') { %>
+        <a href="/admin" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">إدارة المسؤولين</a>
+      <% } %>
+    </div>
+  <% } else { %>
+    <div class="space-x-4">
+      <a href="/login" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">تسجيل الدخول</a>
+      <a href="/register" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">التسجيل</a>
+    </div>
+  <% } %>
+</div>

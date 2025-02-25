@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js" 
+  integrity="sha512-wU52KMTtCrN9e89WglWm/4F8yBJJ2trL4AZ5CXHtWNbL4EumRJtCnk81WIPa6t+MGuq2jcdM1gMJXn9qAD0cYw==" 
+  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+</head>
+<body class="bg-gray-50 font-sans">
+  <div class="flex">
+    <!-- الشريط الجانبي -->
+    <aside class="w-64 bg-gray-800 text-white min-h-screen p-4">
+      <h2 class="text-xl font-bold mb-6 text-center">لوحة التحكم</h2>
+      <nav class="space-y-4">
+        <a href="/" class="block hover:bg-gray-700 p-2 rounded">الرئيسية</a>
+        <a href="/tokens" class="block hover:bg-gray-700 p-2 rounded">الرموز</a>
+        <a href="/devices" class="block hover:bg-gray-700 p-2 rounded">الأجهزة</a>
+        <% if(user && user.role === 'superadmin') { %>
+          <a href="/admin" class="block hover:bg-gray-700 p-2 rounded">إدارة المسؤولين</a>
+        <% } %>
+        <a href="/logout" class="block hover:bg-gray-700 p-2 rounded">تسجيل الخروج</a>
+      </nav>
+    </aside>
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-1 p-6">
+      <%- body %>
+    </main>
+  </div>
+</body>
+</html>

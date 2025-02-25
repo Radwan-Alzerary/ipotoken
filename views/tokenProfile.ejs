@@ -1,0 +1,34 @@
+<div class="container mx-auto px-4 py-6">
+  <h1 class="text-3xl font-bold mb-4">ملف الرمز</h1>
+  <div class="bg-white p-6 rounded shadow">
+    <h2 class="text-2xl font-semibold mb-4">تفاصيل الرمز</h2>
+    <p><strong>رمز الأمان:</strong> <%= token.securityCode %></p>
+    <p><strong>عدد الأيام:</strong> <%= token.dayNum %></p>
+    <p><strong>السعر:</strong> <%= token.price ? token.price.toFixed(2) : '---' %></p>
+    <p><strong>اسم العميل:</strong> <%= token.customerName || '---' %></p>
+    <p><strong>الوصف:</strong> <%= token.description || '---' %></p>
+    <p><strong>خط العرض:</strong> <%= token.latitude || '---' %></p>
+    <p><strong>خط الطول:</strong> <%= token.longitude || '---' %></p>
+    <p><strong>نوع الدفع:</strong> <%= token.paymentType || '---' %></p>
+    <p><strong>من أين عرف عن النظام:</strong> <%= token.referral || '---' %></p>
+    <p><strong>الحالة:</strong> <%= token.state %></p>
+    <p><strong>تاريخ الانتهاء:</strong> <%= new Date(token.expires).toLocaleString() %></p>
+    <p><strong>أنشئ بواسطة:</strong> <%= token.createdBy %></p>
+  </div>
+  
+  <% if(user) { %>
+  <div class="bg-white p-6 rounded shadow mt-6">
+    <h2 class="text-2xl font-semibold mb-4">تفاصيل الجهاز المستخدم</h2>
+    <p><strong>عنوان IP:</strong> <%= user.ip %></p>
+    <p><strong>مفتاح الجهاز:</strong> <%= user.deviceKey %></p>
+    <p><strong>معلومات الجهاز:</strong> <%= user.pcInfo %></p>
+    <p><strong>معلومات نظام التشغيل:</strong> <%= user.osInfo %></p>
+    <p><strong>وقت التسجيل:</strong> <%= new Date(user.registrationTime).toLocaleString() %></p>
+    <p><strong>تاريخ انتهاء الجهاز:</strong> <%= new Date(user.deviceExpire).toLocaleString() %></p>
+  </div>
+  <% } %>
+  
+  <div class="mt-4">
+    <a href="/tokens" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">عودة إلى إدارة الرموز</a>
+  </div>
+</div>

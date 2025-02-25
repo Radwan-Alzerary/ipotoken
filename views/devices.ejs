@@ -1,61 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Registered Devices</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-  }
-  h1 {
-    margin-bottom: 20px;
-  }
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    max-width: 800px;
-  }
-  table, th, td {
-    border: 1px solid #ccc;
-  }
-  th, td {
-    padding: 12px;
-    text-align: left;
-  }
-  th {
-    background: #f2f2f2;
-  }
-</style>
-</head>
-<body>
-  <h1>Registered Devices</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>IP Address</th>
-        <th>Token</th>
-        <th>Device Key</th>
-        <th>Date Registered</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% if (users.length > 0) { %>
-        <% users.forEach(function(user) { %>
+<div>
+  <h1 class="text-3xl font-bold mb-6">إدارة الأجهزة</h1>
+  
+  <div class="bg-white p-6 rounded shadow">
+    <h2 class="text-2xl font-semibold mb-4">الأجهزة</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-100">
           <tr>
-            <td><%= user.ip %></td>
-            <td><%= user.token %></td>
-            <td><%= user.deviceKey %></td>
-            <td><%= user.timestamp.toLocaleString() %></td>
+            <th class="px-4 py-2 text-right text-sm font-medium text-gray-600">مفتاح الجهاز</th>
+            <th class="px-4 py-2 text-right text-sm font-medium text-gray-600">IP</th>
+            <th class="px-4 py-2 text-right text-sm font-medium text-gray-600">الرمز</th>
+            <th class="px-4 py-2 text-right text-sm font-medium text-gray-600">التاريخ</th>
           </tr>
-        <% }) %>
-      <% } else { %>
-        <tr>
-          <td colspan="4">No registered devices found.</td>
-        </tr>
-      <% } %>
-    </tbody>
-  </table>
-</body>
-</html>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <% users.forEach(user => { %>
+            <tr>
+              <td class="px-4 py-2"><%= user.deviceKey %></td>
+              <td class="px-4 py-2"><%= user.ip %></td>
+              <td class="px-4 py-2"><%= user.token %></td>
+              <td class="px-4 py-2"><%= new Date(user.timestamp).toLocaleString() %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
