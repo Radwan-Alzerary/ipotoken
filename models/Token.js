@@ -23,13 +23,11 @@ const tokenSchema = new mongoose.Schema({
   systemType: { 
     type: String, 
     enum: ['راجيتة', 'برنامج مطاعم', 'برنامج ماركتات'], 
-    required: true, 
     trim: true 
   },
   buyType: { 
     type: String, 
     enum: ['نظام كامل', 'نظام مبيعات', 'نظام مشتريات'], 
-    required: true, 
     trim: true 
   },
   // New field to store comments (commands)
