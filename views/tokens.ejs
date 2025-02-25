@@ -64,6 +64,25 @@
           <input type="text" name="referral" class="w-full px-3 py-2 border rounded"
             placeholder="مثلاً: إعلان، توصية" />
         </div>
+        <!-- حقول النظام والشراء الجديدة -->
+        <div>
+          <label class="block text-gray-700">نوع النظام</label>
+          <select name="systemType" required class="w-full px-3 py-2 border rounded">
+            <option value="" disabled selected>اختر نوع النظام</option>
+            <option value="راجيتة">راجيتة</option>
+            <option value="برنامج مطاعم">برنامج مطاعم</option>
+            <option value="برنامج ماركتات">برنامج ماركتات</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700">نوع الشراء</label>
+          <select name="buyType" required class="w-full px-3 py-2 border rounded">
+            <option value="" disabled selected>اختر نوع الشراء</option>
+            <option value="نظام كامل">نظام كامل</option>
+            <option value="نظام مبيعات">نظام مبيعات</option>
+            <option value="نظام مشتريات">نظام مشتريات</option>
+          </select>
+        </div>
         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">إنشاء الرمز</button>
       </form>
     </div>
@@ -118,6 +137,8 @@
             <th class="px-4 py-2 text-right">عدد الأيام</th>
             <th class="px-4 py-2 text-right">السعر</th>
             <th class="px-4 py-2 text-right">اسم العميل</th>
+            <th class="px-4 py-2 text-right">نوع النظام</th>
+            <th class="px-4 py-2 text-right">نوع الشراء</th>
             <th class="px-4 py-2 text-right">الموقع</th>
             <th class="px-4 py-2 text-right">الوصف</th>
             <th class="px-4 py-2 text-right">الحالة</th>
@@ -143,6 +164,12 @@
                 <%= token.customerName || '---' %>
               </td>
               <td class="px-4 py-2">
+                <%= token.systemType || '---' %>
+              </td>
+              <td class="px-4 py-2">
+                <%= token.buyType || '---' %>
+              </td>
+              <td class="px-4 py-2">
                 <%= token.location || '---' %>
               </td>
               <td class="px-4 py-2">
@@ -151,11 +178,11 @@
               <td class="px-4 py-2">
                 <% if(token.state==='active' ) { %>
                   <span class="text-green-600 font-bold">نشطة</span>
-                  <% } else if(token.state==='used' ) { %>
-                    <span class="text-yellow-600 font-bold">مستخدمة</span>
-                    <% } else { %>
-                      <span class="text-red-600 font-bold">منتهية</span>
-                      <% } %>
+                <% } else if(token.state==='used' ) { %>
+                  <span class="text-yellow-600 font-bold">مستخدمة</span>
+                <% } else { %>
+                  <span class="text-red-600 font-bold">منتهية</span>
+                <% } %>
               </td>
               <td class="px-4 py-2">
                 <%= new Date(token.expires).toLocaleString() %>
@@ -167,9 +194,9 @@
               <td class="px-4 py-2 text-center" data-device-key="<%= token.securityCode ? token.securityCode : '' %>">
                 <% if(token.securityCode) { %>
                   <span class="device-status">غير متصل</span>
-                  <% } else { %>
-                    ---
-                    <% } %>
+                <% } else { %>
+                  ---
+                <% } %>
               </td>
               <td class="px-4 py-2 text-center space-x-2">
                 <button onclick="copyToken('<%= token.securityCode %>/<%= token.dayNum %>')"
@@ -182,21 +209,20 @@
                   class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">ملف الرمز</a>
               </td>
             </tr>
-            <% }) %>
+          <% }) %>
         </tbody>
       </table>
     </div>
 
     <!-- Pagination -->
     <div class="mt-4 flex justify-center">
-      <% if (currentPage> 1) { %>
+      <% if (currentPage > 1) { %>
         <button onclick="changePage(<%= currentPage - 1 %>)" class="mx-1 px-3 py-1 bg-gray-300 rounded">السابق</button>
-        <% } %>
-          <span class="mx-2 font-bold">صفحة <%= currentPage %> من <%= totalPages %></span>
-          <% if (currentPage < totalPages) { %>
-            <button onclick="changePage(<%= currentPage + 1 %>)"
-              class="mx-1 px-3 py-1 bg-gray-300 rounded">التالي</button>
-            <% } %>
+      <% } %>
+      <span class="mx-2 font-bold">صفحة <%= currentPage %> من <%= totalPages %></span>
+      <% if (currentPage < totalPages) { %>
+        <button onclick="changePage(<%= currentPage + 1 %>)" class="mx-1 px-3 py-1 bg-gray-300 rounded">التالي</button>
+      <% } %>
     </div>
   </div>
 
@@ -226,11 +252,27 @@
           <label class="block text-gray-700">الوصف</label>
           <textarea name="description" id="editDescription" class="w-full px-3 py-2 border rounded"></textarea>
         </div>
+        <!-- New fields for system type and buy type in edit modal -->
+        <div>
+          <label class="block text-gray-700">نوع النظام</label>
+          <select name="systemType" id="editSystemType" required class="w-full px-3 py-2 border rounded">
+            <option value="راجيتة">راجيتة</option>
+            <option value="برنامج مطاعم">برنامج مطاعم</option>
+            <option value="برنامج ماركتات">برنامج ماركتات</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700">نوع الشراء</label>
+          <select name="buyType" id="editBuyType" required class="w-full px-3 py-2 border rounded">
+            <option value="نظام كامل">نظام كامل</option>
+            <option value="نظام مبيعات">نظام مبيعات</option>
+            <option value="نظام مشتريات">نظام مشتريات</option>
+          </select>
+        </div>
         <div class="flex justify-end space-x-2">
           <button type="button" onclick="closeEditModal()"
             class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">إلغاء</button>
-          <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">حفظ
-            التغييرات</button>
+          <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">حفظ التغييرات</button>
         </div>
       </form>
     </div>
@@ -265,7 +307,7 @@
       // Update the status for each active device from the array
       devices.forEach(device => {
         document.querySelectorAll(`[data-device-key="${device}"]`).forEach(cell => {
-          console.log(device)
+          console.log(device);
           const statusSpan = cell.querySelector('.device-status');
           if (statusSpan) {
             statusSpan.textContent = "متصل";
@@ -273,11 +315,6 @@
         });
       });
     });
-
-    // Emit a ping event every 10 seconds (ensure your server handles this event)
-    // setInterval(() => {
-    //   socket.emit('pingDevices');
-    // }, 10000);
 
     // Toggle add token form visibility
     document.getElementById('toggleAddForm').addEventListener('click', function () {
@@ -305,6 +342,8 @@
           document.getElementById('editCustomerName').value = data.customerName || '';
           document.getElementById('editLocation').value = data.location || '';
           document.getElementById('editDescription').value = data.description || '';
+          document.getElementById('editSystemType').value = data.systemType;
+          document.getElementById('editBuyType').value = data.buyType;
           document.getElementById('editModal').classList.remove('hidden');
         })
         .catch(err => alert("فشل جلب بيانات الرمز: " + err));
@@ -322,11 +361,13 @@
       const customerName = document.getElementById('editCustomerName').value;
       const location = document.getElementById('editLocation').value;
       const description = document.getElementById('editDescription').value;
+      const systemType = document.getElementById('editSystemType').value;
+      const buyType = document.getElementById('editBuyType').value;
 
       fetch(`/tokens/${tokenId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dayNum, price, customerName, location, description })
+        body: JSON.stringify({ dayNum, price, customerName, location, description, systemType, buyType })
       })
         .then(response => response.json())
         .then(data => {
