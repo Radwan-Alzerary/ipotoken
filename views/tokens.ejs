@@ -205,6 +205,9 @@
                   class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">تعديل</button>
                 <button onclick="deleteToken('<%= token._id %>')"
                   class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">حذف</button>
+                <!-- New Command Button -->
+                <button onclick="sendCommandForToken('<%= token._id %>')"
+                  class="bg-purple-500 text-white px-2 py-1 rounded hover:bg-purple-600">أمر</button>
                 <a href="/tokens/profile/<%= token._id %>"
                   class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">ملف الرمز</a>
               </td>
@@ -284,6 +287,7 @@
   <script>
     const socket = io();
     socket.emit('pingDevices');
+
     // Listen for device status updates from the server
     socket.on('deviceStatus', (data) => {
       console.log("حالة الجهاز:", data);
@@ -294,6 +298,7 @@
         }
       });
     });
+
     socket.on('pingDevicesResponse', (devices) => {
       console.log("الأجهزة المتصلة:", devices);
       // Optionally, reset all devices to "غير متصل" before updating
@@ -398,6 +403,27 @@
           .catch(err => alert("فشل الحذف: " + err));
       }
     }
+
+    // New function to send command for a specific token via Socket.io
+    function sendCommandForToken(tokenId) {
+      const command = prompt("أدخل الأمر لرمز " + tokenId + ":");
+      if (command) {
+        // Assuming user information is injected from the server
+        const createdBy = "<%= user ? user.username : 'Unknown' %>";
+        socket.emit('sendCommand', { tokenId, command, createdBy });
+        alert("تم إرسال الأمر!");
+      }
+    }
+
+    // Optionally, listen for command feedback from the server
+    socket.on('newComment', (data) => {
+      console.log("تم إضافة أمر جديد للرمز:", data.tokenId, "الأمر:", data.command, "من قبل:", data.createdBy);
+      // Here you can update the UI to reflect the new comment for the token if needed.
+    });
+
+    socket.on('commandError', (data) => {
+      alert("خطأ في إرسال الأمر: " + data.msg);
+    });
   </script>
 </body>
 
