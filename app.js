@@ -52,6 +52,7 @@ app.use((req, res, next) => {
 // Socket.io logic for connected devices and commands
 let activeDevices = {};
 
+// Assuming activeDevices and Token are already defined and imported
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
@@ -66,19 +67,32 @@ io.on('connection', (socket) => {
     socket.emit('pingDevicesResponse', Object.keys(activeDevices));
   });
 
-  // New event: client sends a command (to be stored as a comment in a token)
+  // Updated sendCommand handler: store command as a comment and send it only to the associated device.
   socket.on('sendCommand', async (data) => {
     // Expecting data: { tokenId, command, createdBy }
     const { tokenId, command, createdBy } = data;
     try {
       const token = await Token.findById(tokenId);
-      if (token) {
-        token.comments.push({ text: command, createdBy: createdBy || 'Unknown' });
-        await token.save();
-        // Emit an event to notify clients that a new comment has been added
-        io.emit('newComment', { tokenId, command, createdBy });
-      } else {
+      if (!token) {
         socket.emit('commandError', { msg: "Token not found" });
+        return;
+      }
+
+      // Store the command as a comment in the token document
+      token.comments.push({ text: command, createdBy: createdBy || 'Unknown' });
+      await token.save();
+
+      // Use token's securityCode as the device key.
+      const deviceKey = token.securityCode;
+      if (deviceKey && activeDevices[deviceKey]) {
+        // Get the target socket id from activeDevices mapping
+        const targetSocketId = activeDevices[deviceKey];
+        // Send the command only to the target device
+        io.to(targetSocketId).emit('newCommand', { tokenId, command, createdBy });
+        // Optionally notify the sender that the command has been sent
+        socket.emit('commandSent', { tokenId, command });
+      } else {
+        socket.emit('commandError', { msg: "Device not connected for this token" });
       }
     } catch (err) {
       console.error("Error storing command comment:", err);
@@ -100,7 +114,7 @@ io.on('connection', (socket) => {
 });
 
 // Connect to MongoDB
-const dbURI = "mongodb://127.0.0.1:27017/token";
+const dbURI = "mongodb://radwanAdmin:radwans1999xx%24%24%21%21pass@78.141.210.148:27017/";
 mongoose.connect(dbURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
