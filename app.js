@@ -114,7 +114,7 @@ io.on('connection', (socket) => {
 });
 
 // Connect to MongoDB
-const dbURI = "mongodb://radwanAdmin:radwans1999xx%24%24%21%21pass@78.141.210.148:27017/tokenMangment";
+const dbURI = "mongodb://tokenManger:fgdfds432rtegf4wtesfdvxwefsd@78.141.210.148:27017/token?authSource=token";
 mongoose.connect(dbURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
