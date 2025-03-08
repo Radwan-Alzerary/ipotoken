@@ -114,7 +114,7 @@ io.on('connection', (socket) => {
 });
 
 // Connect to MongoDB
-const dbURI = "mongodb://aswar:fsdgf243dwed432fds@localhost:27017/aswartoken";
+const dbURI = "mongodb://radwanAdmin:radwans1999xx%24%24%21%21pass@78.141.210.148:27017/tokenMangment";
 mongoose.connect(dbURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
